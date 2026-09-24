@@ -1,10 +1,3 @@
-# Render Blueprint: New + > Blueprint > pick this repo
-databases:
-  - name: rag-db
-    plan: free
-    databaseName: rag
-    user: rag
-
 services:
   - type: web
     name: rag-backend
@@ -12,22 +5,18 @@ services:
     plan: free
     rootDir: backend
     buildCommand: ./build.sh
-    startCommand: gunicorn config.wsgi:application --timeout 120
+    startCommand: python manage.py migrate && gunicorn config.wsgi:application --timeout 120
     healthCheckPath: /api/health/
     envVars:
       - key: PYTHON_VERSION
         value: 3.12.7
-      - key: DATABASE_URL
-        fromDatabase:
-          name: rag-db
-          property: connectionString
       - key: SECRET_KEY
         generateValue: true
-      - key: OPENAI_API_KEY   # embeddings (required)
+      - key: OPENAI_API_KEY
         sync: false
-      - key: ANTHROPIC_API_KEY # optional: answers with Claude instead of OpenAI
+      - key: ANTHROPIC_API_KEY
         sync: false
-      - key: FRONTEND_URL     # set to your static site URL after first deploy
+      - key: FRONTEND_URL
         sync: false
 
   - type: web
@@ -37,7 +26,7 @@ services:
     buildCommand: npm ci && npm run build
     staticPublishPath: dist
     envVars:
-      - key: VITE_API_URL     # set to your backend URL after first deploy
+      - key: VITE_API_URL
         sync: false
     routes:
       - type: rewrite
